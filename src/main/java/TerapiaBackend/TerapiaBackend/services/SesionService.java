@@ -38,6 +38,7 @@ public class SesionService {
             sesion.setEstado(updatedSesion.getEstado());
             sesion.setId_terapia(updatedSesion.getId_terapia());
             sesion.setId_profesional(updatedSesion.getId_profesional());
+            sesion.setId_cliente(updatedSesion.getId_cliente());
             return sesionRepository.save(sesion);
         }).orElseThrow(() -> new RuntimeException("Sesión no encontrada con ID: " + id));
     }

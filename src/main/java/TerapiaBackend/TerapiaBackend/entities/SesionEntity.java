@@ -34,4 +34,6 @@ public class SesionEntity {
     private int id_terapia;
 
     private int id_profesional;
+
+    private int id_cliente;
 }
