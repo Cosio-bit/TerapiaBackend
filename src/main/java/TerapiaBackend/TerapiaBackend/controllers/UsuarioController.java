@@ -3,10 +3,10 @@ package TerapiaBackend.TerapiaBackend.controllers;
 import TerapiaBackend.TerapiaBackend.entities.UsuarioEntity;
 import TerapiaBackend.TerapiaBackend.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -16,27 +16,36 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping
-    public List<UsuarioEntity> getAllUsuarios() {
-        return usuarioService.findAll();
+    public ResponseEntity<List<UsuarioEntity>> getAllUsuarios() {
+        List<UsuarioEntity> usuarios = usuarioService.findAll();
+        return usuarios.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(usuarios);
     }
 
     @GetMapping("/{id}")
-    public Optional<UsuarioEntity> getUsuarioById(@PathVariable Long id) {
-        return usuarioService.findById(id);
+    public ResponseEntity<UsuarioEntity> getUsuarioById(@PathVariable Long id) {
+        return usuarioService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public UsuarioEntity createUsuario(@RequestBody UsuarioEntity usuario) {
-        return usuarioService.save(usuario);
+    public ResponseEntity<UsuarioEntity> createUsuario(@RequestBody UsuarioEntity usuario) {
+        return ResponseEntity.ok(usuarioService.save(usuario));
     }
 
     @PutMapping("/{id}")
-    public UsuarioEntity updateUsuario(@PathVariable Long id, @RequestBody UsuarioEntity usuario) {
-        return usuarioService.update(id, usuario);
+    public ResponseEntity<UsuarioEntity> updateUsuario(@PathVariable Long id, @RequestBody UsuarioEntity usuario) {
+        return ResponseEntity.ok(usuarioService.update(id, usuario));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUsuario(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
         usuarioService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/importar")
+    public ResponseEntity<List<UsuarioEntity>> crearEnLote(@RequestBody List<UsuarioEntity> usuarios) {
+        return ResponseEntity.ok(usuarioService.saveAll(usuarios));
     }
 }

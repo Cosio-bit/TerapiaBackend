@@ -1,10 +1,7 @@
 package TerapiaBackend.TerapiaBackend.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -17,18 +14,25 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArriendoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_arriendo;
 
-    private LocalDate fecha_inicio;
+    @ManyToOne
+    @JoinColumn(name = "id_sala", nullable = false)
+    private SalaEntity sala;
 
-    private LocalDate fecha_termino;
+    @ManyToOne
+    @JoinColumn(name = "id_cliente", nullable = false)
+    private ClienteEntity cliente;
 
-    private String estado; // Ejemplo: "activo", "finalizado", "cancelado"
-
-    private int id_sala;
+    private LocalDate fecha;
+    private String hora_inicio;
+    private String hora_fin;
+    private String estado;  // Example: "active", "completed", "canceled"
+    private Double monto_pagado;  // Optional: Track how much the client paid
 }
 

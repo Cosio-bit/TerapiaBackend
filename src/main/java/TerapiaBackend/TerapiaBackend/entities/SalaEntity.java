@@ -1,10 +1,7 @@
 package TerapiaBackend.TerapiaBackend.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -15,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SalaEntity {
 
     @Id
@@ -22,15 +20,12 @@ public class SalaEntity {
     private Long id_sala;
 
     private String nombre;
-
     private int capacidad;
-
     private int precio;
-
     private String ubicacion;
+    private String estado;  // Example: "available", "maintenance", etc.
 
-    private String estado; // Ejemplo: "disponible", "mantenimiento", etc.
-
-    private int id_proveedor;
+    @ManyToOne
+    @JoinColumn(name = "id_proveedor", nullable = false)
+    private ProveedorEntity proveedor;
 }
-

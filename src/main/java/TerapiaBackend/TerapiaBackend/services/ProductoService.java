@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductoService {
@@ -18,27 +17,33 @@ public class ProductoService {
         return productoRepository.findAll();
     }
 
-    public Optional<ProductoEntity> findById(Long id) {
-        return productoRepository.findById(id);
+    public ProductoEntity findById(Long id_producto) {
+        return productoRepository.findById(id_producto)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id_producto));
     }
 
     public ProductoEntity save(ProductoEntity producto) {
         return productoRepository.save(producto);
     }
 
-    public void deleteById(Long id) {
-        productoRepository.deleteById(id);
-    }
-
-    public ProductoEntity update(Long id, ProductoEntity updatedProducto) {
-        return productoRepository.findById(id).map(producto -> {
+    public ProductoEntity update(Long id_producto, ProductoEntity updatedProducto) {
+        return productoRepository.findById(id_producto).map(producto -> {
             producto.setNombre(updatedProducto.getNombre());
-            producto.setFecha_creacion(updatedProducto.getFecha_creacion());
+            producto.setDescripcion(updatedProducto.getDescripcion());
             producto.setPrecio(updatedProducto.getPrecio());
             producto.setStock(updatedProducto.getStock());
-            producto.setId_proveedor(updatedProducto.getId_proveedor());
-            producto.setId_categoria(updatedProducto.getId_categoria());
             return productoRepository.save(producto);
-        }).orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+        }).orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id_producto));
+    }
+
+    public void deleteById(Long id_producto) {
+        if (!productoRepository.existsById(id_producto)) {
+            throw new RuntimeException("Producto no encontrado con ID: " + id_producto);
+        }
+        productoRepository.deleteById(id_producto);
+    }
+
+    public List<ProductoEntity> saveAll(List<ProductoEntity> productos) {
+        return productoRepository.saveAll(productos);
     }
 }

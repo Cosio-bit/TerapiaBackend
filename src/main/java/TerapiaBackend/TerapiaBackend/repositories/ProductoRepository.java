@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductoRepository extends JpaRepository<ProductoEntity, Long> {
-    // Métodos personalizados si son necesarios
+    // No queries related to purchases should be here since ProductoEntity does not reference CompraEntity
 }

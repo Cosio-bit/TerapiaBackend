@@ -9,34 +9,39 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/fichasalud")
+@RequestMapping("/api/fichas-salud")
 public class FichaSaludController {
 
     @Autowired
     private FichaSaludService fichaSaludService;
 
     @GetMapping
-    public List<FichaSaludEntity> getAllFichasSalud() {
+    public List<FichaSaludEntity> obtenerTodas() {
         return fichaSaludService.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Optional<FichaSaludEntity> getFichaSaludById(@PathVariable Long id) {
-        return fichaSaludService.findById(id);
+    @GetMapping("/{id_fichasalud}")
+    public Optional<FichaSaludEntity> obtenerPorId(@PathVariable Long id_fichasalud) {
+        return fichaSaludService.findById(id_fichasalud);
     }
 
     @PostMapping
-    public FichaSaludEntity createFichaSalud(@RequestBody FichaSaludEntity fichaSalud) {
+    public FichaSaludEntity crear(@RequestBody FichaSaludEntity fichaSalud) {
         return fichaSaludService.save(fichaSalud);
     }
 
-    @PutMapping("/{id}")
-    public FichaSaludEntity updateFichaSalud(@PathVariable Long id, @RequestBody FichaSaludEntity fichaSalud) {
-        return fichaSaludService.update(id, fichaSalud);
+    @PutMapping("/{id_fichasalud}")
+    public FichaSaludEntity actualizar(@PathVariable Long id_fichasalud, @RequestBody FichaSaludEntity fichaSalud) {
+        return fichaSaludService.update(id_fichasalud, fichaSalud);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteFichaSalud(@PathVariable Long id) {
-        fichaSaludService.deleteById(id);
+    @DeleteMapping("/{id_fichasalud}")
+    public void eliminar(@PathVariable Long id_fichasalud) {
+        fichaSaludService.deleteById(id_fichasalud);
+    }
+
+    @PostMapping("/importar")
+    public List<FichaSaludEntity> crearEnLote(@RequestBody List<FichaSaludEntity> fichasSalud) {
+        return fichaSaludService.saveAll(fichasSalud);
     }
 }

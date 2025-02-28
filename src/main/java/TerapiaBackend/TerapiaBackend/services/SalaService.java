@@ -18,27 +18,32 @@ public class SalaService {
         return salaRepository.findAll();
     }
 
-    public Optional<SalaEntity> findById(Long id) {
-        return salaRepository.findById(id);
+    public Optional<SalaEntity> findById(Long id_sala) {
+        return salaRepository.findById(id_sala);
     }
 
     public SalaEntity save(SalaEntity sala) {
         return salaRepository.save(sala);
     }
 
-    public void deleteById(Long id) {
-        salaRepository.deleteById(id);
-    }
-
-    public SalaEntity update(Long id, SalaEntity updatedSala) {
-        return salaRepository.findById(id).map(sala -> {
+    public SalaEntity update(Long id_sala, SalaEntity updatedSala) {
+        return salaRepository.findById(id_sala).map(sala -> {
             sala.setNombre(updatedSala.getNombre());
             sala.setCapacidad(updatedSala.getCapacidad());
-            sala.setPrecio(updatedSala.getPrecio());
             sala.setUbicacion(updatedSala.getUbicacion());
             sala.setEstado(updatedSala.getEstado());
-            sala.setId_proveedor(updatedSala.getId_proveedor());
             return salaRepository.save(sala);
-        }).orElseThrow(() -> new RuntimeException("Sala no encontrada con ID: " + id));
+        }).orElseThrow(() -> new RuntimeException("Sala no encontrada con ID: " + id_sala));
+    }
+
+    public void deleteById(Long id_sala) {
+        if (!salaRepository.existsById(id_sala)) {
+            throw new RuntimeException("Sala no encontrada con ID: " + id_sala);
+        }
+        salaRepository.deleteById(id_sala);
+    }
+
+    public List<SalaEntity> saveAll(List<SalaEntity> salas) {
+        return salaRepository.saveAll(salas);
     }
 }

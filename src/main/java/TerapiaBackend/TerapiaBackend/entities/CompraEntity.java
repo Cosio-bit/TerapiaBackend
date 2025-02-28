@@ -2,12 +2,10 @@ package TerapiaBackend.TerapiaBackend.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -18,15 +16,21 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CompraEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_compra;
 
-    private LocalDateTime fecha_compra; // Fecha y hora de la compra
+    private LocalDateTime fecha;
+    private BigDecimal total;
 
-    private BigDecimal total; // Total de la compra
+    @ManyToOne
+    @JoinColumn(name = "id_cliente", nullable = false)
+    private ClienteEntity cliente;
 
-    private int id_cliente; // Relación manual con ClienteEntity
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "id_compra")  // Ensures the relationship is owned by CompraEntity
+    private List<ProductoCompradoEntity> productosComprados;
 }

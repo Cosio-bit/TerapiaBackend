@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TerapiaRepository extends JpaRepository<TerapiaEntity, Long> {
-    // Métodos personalizados si son necesarios
+    // No changes needed for now, but custom queries can be added later
 }

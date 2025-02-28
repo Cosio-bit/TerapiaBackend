@@ -26,10 +26,6 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public void deleteById(Long id) {
-        usuarioRepository.deleteById(id);
-    }
-
     public UsuarioEntity update(Long id, UsuarioEntity updatedUsuario) {
         return usuarioRepository.findById(id).map(usuario -> {
             usuario.setNombre(updatedUsuario.getNombre());
@@ -42,5 +38,16 @@ public class UsuarioService {
             usuario.setSaldo(updatedUsuario.getSaldo());
             return usuarioRepository.save(usuario);
         }).orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+    }
+
+    public void deleteById(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado con ID: " + id);
+        }
+        usuarioRepository.deleteById(id);
+    }
+
+    public List<UsuarioEntity> saveAll(List<UsuarioEntity> usuarios) {
+        return usuarioRepository.saveAll(usuarios);
     }
 }

@@ -1,22 +1,18 @@
 package TerapiaBackend.TerapiaBackend.entities;
 
-import java.util.Date;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Entity
 @Table(name = "categoria")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CategoriaEntity {
 
     @Id
@@ -24,11 +20,17 @@ public class CategoriaEntity {
     private Long id_categoria;
 
     private String nombre;
-
     private String descripcion;
 
-    private Boolean activa;
+    @OneToMany
+    @JoinColumn(name = "id_categoria")
+    private List<TerapiaEntity> terapias;
 
-    private Integer orden;
+    @OneToMany
+    @JoinColumn(name = "id_categoria")
+    private List<SalaEntity> salas;
 
+    @OneToMany
+    @JoinColumn(name = "id_categoria")
+    private List<ProductoEntity> productos;
 }

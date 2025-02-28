@@ -1,24 +1,20 @@
 package TerapiaBackend.TerapiaBackend.entities;
 
-import java.util.Date;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
+import java.util.ArrayList;
+import java.util.List;
 @Entity
 @Table(name = "terapia")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class TerapiaEntity {
 
     @Id
@@ -26,16 +22,18 @@ public class TerapiaEntity {
     private Long id_terapia;
 
     private String nombre;
-
     private String descripcion;
+    private String presencial;
 
-    private LocalDate fecha_inicio;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "id_terapia")
+    private List<VarianteServicioEntity> variantes = new ArrayList<>();
 
-    private LocalDate fecha_fin;
-
-    private int precio;
-
-    private int cantidad_sesiones;
-
-    private String estado; // Ejemplo: "activa", "completada", etc.
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinTable(
+            name = "terapia_profesional",
+            joinColumns = @JoinColumn(name = "id_terapia"),
+            inverseJoinColumns = @JoinColumn(name = "id_profesional")
+    )
+    private List<ProfesionalEntity> profesionales = new ArrayList<>(); // ✅ Ensure list is mutable
 }

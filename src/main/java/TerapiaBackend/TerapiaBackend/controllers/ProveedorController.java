@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-
-@RestController
+import java.util.Optional;@RestController
 @RequestMapping("/api/proveedores")
 public class ProveedorController {
 
@@ -20,9 +18,9 @@ public class ProveedorController {
         return proveedorService.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Optional<ProveedorEntity> getProveedorById(@PathVariable Long id) {
-        return proveedorService.findById(id);
+    @GetMapping("/{id_proveedor}")
+    public Optional<ProveedorEntity> getProveedorById(@PathVariable Long id_proveedor) {
+        return proveedorService.findById(id_proveedor);
     }
 
     @PostMapping
@@ -30,13 +28,18 @@ public class ProveedorController {
         return proveedorService.save(proveedor);
     }
 
-    @PutMapping("/{id}")
-    public ProveedorEntity updateProveedor(@PathVariable Long id, @RequestBody ProveedorEntity proveedor) {
-        return proveedorService.update(id, proveedor);
+    @PutMapping("/{id_proveedor}")
+    public ProveedorEntity updateProveedor(@PathVariable Long id_proveedor, @RequestBody ProveedorEntity proveedor) {
+        return proveedorService.update(id_proveedor, proveedor);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteProveedor(@PathVariable Long id) {
-        proveedorService.deleteById(id);
+    @DeleteMapping("/{id_proveedor}")
+    public void deleteProveedor(@PathVariable Long id_proveedor) {
+        proveedorService.deleteById(id_proveedor);
+    }
+
+    @PostMapping("/importar")
+    public List<ProveedorEntity> crearEnLote(@RequestBody List<ProveedorEntity> proveedores) {
+        return proveedorService.saveAll(proveedores);
     }
 }

@@ -3,10 +3,10 @@ package TerapiaBackend.TerapiaBackend.controllers;
 import TerapiaBackend.TerapiaBackend.entities.TerapiaEntity;
 import TerapiaBackend.TerapiaBackend.services.TerapiaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/terapias")
@@ -16,27 +16,36 @@ public class TerapiaController {
     private TerapiaService terapiaService;
 
     @GetMapping
-    public List<TerapiaEntity> getAllTerapias() {
-        return terapiaService.findAll();
+    public ResponseEntity<List<TerapiaEntity>> getAllTerapias() {
+        List<TerapiaEntity> terapias = terapiaService.findAll();
+        return terapias.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(terapias);
     }
 
     @GetMapping("/{id}")
-    public Optional<TerapiaEntity> getTerapiaById(@PathVariable Long id) {
-        return terapiaService.findById(id);
+    public ResponseEntity<TerapiaEntity> getTerapiaById(@PathVariable Long id) {
+        return terapiaService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public TerapiaEntity createTerapia(@RequestBody TerapiaEntity terapia) {
-        return terapiaService.save(terapia);
+    public ResponseEntity<TerapiaEntity> createTerapia(@RequestBody TerapiaEntity terapia) {
+        return ResponseEntity.ok(terapiaService.createOrUpdateTerapia(terapia));
     }
 
     @PutMapping("/{id}")
-    public TerapiaEntity updateTerapia(@PathVariable Long id, @RequestBody TerapiaEntity terapia) {
-        return terapiaService.update(id, terapia);
+    public ResponseEntity<TerapiaEntity> updateTerapia(@PathVariable Long id, @RequestBody TerapiaEntity terapia) {
+        return ResponseEntity.ok(terapiaService.createOrUpdateTerapia(terapia));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTerapia(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTerapia(@PathVariable Long id) {
         terapiaService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/importar")
+    public ResponseEntity<List<TerapiaEntity>> crearEnLote(@RequestBody List<TerapiaEntity> terapias) {
+        return ResponseEntity.ok(terapiaService.saveAll(terapias));
     }
 }

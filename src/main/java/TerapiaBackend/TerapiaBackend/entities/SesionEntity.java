@@ -1,39 +1,30 @@
 package TerapiaBackend.TerapiaBackend.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "sesion")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SesionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_sesion;
 
-    private String nombre;
-
-    private int precio;
+    @ManyToOne
+    @JoinColumn(name = "id_profesional", nullable = false)
+    private ProfesionalEntity profesional;
 
     private LocalDateTime fecha_hora;
-
-    private String estado; // Ejemplo: "pendiente", "completada", "cancelada"
-
-    private int id_terapia;
-
-    private int id_profesional;
-
-    private int id_cliente;
+    private Double precio;
+    private String estado;
 }

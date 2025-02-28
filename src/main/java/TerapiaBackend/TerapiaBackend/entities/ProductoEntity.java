@@ -3,11 +3,8 @@ package TerapiaBackend.TerapiaBackend.entities;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -18,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ProductoEntity {
 
     @Id
@@ -25,15 +23,13 @@ public class ProductoEntity {
     private Long id_producto;
 
     private String nombre;
+    private String descripcion;
+    private Double precio;
+    private Integer stock;
 
-    private LocalDateTime fecha_creacion;
-
-    private BigDecimal precio;
-
-    private Integer stock; // Cantidad disponible
-
-    private int id_proveedor;
-
-    private int id_categoria;
+    @ManyToOne
+    @JoinColumn(name = "id_proveedor", nullable = false)
+    private ProveedorEntity proveedor;
 }
+
 

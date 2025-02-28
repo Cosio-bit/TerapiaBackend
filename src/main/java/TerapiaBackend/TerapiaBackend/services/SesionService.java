@@ -18,28 +18,32 @@ public class SesionService {
         return sesionRepository.findAll();
     }
 
-    public Optional<SesionEntity> findById(Long id) {
-        return sesionRepository.findById(id);
+    public Optional<SesionEntity> findById(Long id_sesion) {
+        return sesionRepository.findById(id_sesion);
     }
 
     public SesionEntity save(SesionEntity sesion) {
         return sesionRepository.save(sesion);
     }
 
-    public void deleteById(Long id) {
-        sesionRepository.deleteById(id);
-    }
-
-    public SesionEntity update(Long id, SesionEntity updatedSesion) {
-        return sesionRepository.findById(id).map(sesion -> {
-            sesion.setNombre(updatedSesion.getNombre());
-            sesion.setPrecio(updatedSesion.getPrecio());
+    public SesionEntity update(Long id_sesion, SesionEntity updatedSesion) {
+        return sesionRepository.findById(id_sesion).map(sesion -> {
             sesion.setFecha_hora(updatedSesion.getFecha_hora());
             sesion.setEstado(updatedSesion.getEstado());
-            sesion.setId_terapia(updatedSesion.getId_terapia());
-            sesion.setId_profesional(updatedSesion.getId_profesional());
-            sesion.setId_cliente(updatedSesion.getId_cliente());
+            sesion.setPrecio(updatedSesion.getPrecio());
+            sesion.setProfesional(updatedSesion.getProfesional());
             return sesionRepository.save(sesion);
-        }).orElseThrow(() -> new RuntimeException("Sesión no encontrada con ID: " + id));
+        }).orElseThrow(() -> new RuntimeException("Sesión no encontrada con ID: " + id_sesion));
+    }
+
+    public void deleteById(Long id_sesion) {
+        if (!sesionRepository.existsById(id_sesion)) {
+            throw new RuntimeException("Sesión no encontrada con ID: " + id_sesion);
+        }
+        sesionRepository.deleteById(id_sesion);
+    }
+
+    public List<SesionEntity> importarSesiones(List<SesionEntity> sesiones) {
+        return sesionRepository.saveAll(sesiones);
     }
 }
