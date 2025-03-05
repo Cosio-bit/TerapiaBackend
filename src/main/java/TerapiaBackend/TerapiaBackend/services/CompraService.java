@@ -1,18 +1,13 @@
 package TerapiaBackend.TerapiaBackend.services;
 
-import TerapiaBackend.TerapiaBackend.entities.CompraEntity;
-import TerapiaBackend.TerapiaBackend.entities.ProductoCompradoEntity;
-import TerapiaBackend.TerapiaBackend.entities.ProductoEntity;
-import TerapiaBackend.TerapiaBackend.entities.ClienteEntity;
-import TerapiaBackend.TerapiaBackend.repositories.CompraRepository;
-import TerapiaBackend.TerapiaBackend.repositories.ProductoRepository;
-import TerapiaBackend.TerapiaBackend.repositories.ClienteRepository;
-import jakarta.transaction.Transactional;
+import TerapiaBackend.TerapiaBackend.entities.*;
+import TerapiaBackend.TerapiaBackend.repositories.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,72 +18,70 @@ public class CompraService {
     private CompraRepository compraRepository;
 
     @Autowired
-    private ProductoRepository productoRepository;
+    private ProductoCompradoRepository productoCompradoRepository;
 
     @Autowired
     private ClienteRepository clienteRepository;
 
-    @Transactional
-    public CompraEntity confirmarCompra(CompraEntity compra, boolean usarSaldo) {
-        BigDecimal total = BigDecimal.ZERO;
-        ClienteEntity cliente = compra.getCliente();
-
-        for (ProductoCompradoEntity productoComprado : compra.getProductosComprados()) {
-            ProductoEntity producto = productoRepository.findById(productoComprado.getProducto().getId_producto())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productoComprado.getProducto().getId_producto()));
-
-            if (producto.getStock() < productoComprado.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombre());
-            }
-
-            producto.setStock(producto.getStock() - productoComprado.getCantidad());
-            productoRepository.save(producto);
-
-            BigDecimal subtotal = BigDecimal.valueOf(producto.getPrecio() * productoComprado.getCantidad());
-            total = total.add(subtotal);
-        }
-
-        // Check if the client wants to use saldo
-        if (usarSaldo) {
-            if (cliente.getSaldo() != null && cliente.getSaldo() >= total.doubleValue()) {
-                cliente.setSaldo(cliente.getSaldo() - total.doubleValue());
-                clienteRepository.save(cliente);
-            } else {
-                throw new RuntimeException("Saldo insuficiente para el cliente: " + cliente.getUsuario().getNombre());
-            }
-        }
-
-        compra.setTotal(total);
-        return compraRepository.save(compra);
-    }
+    @Autowired
+    private ProductoRepository productoRepository;
 
     public List<CompraEntity> findAll() {
         return compraRepository.findAll();
     }
 
-    public Optional<CompraEntity> findById(Long id) {
-        return compraRepository.findById(id);
+    public Optional<CompraEntity> findById(Long id_compra) {
+        return compraRepository.findById(id_compra);
     }
 
-    public Optional<CompraEntity> update(Long id, CompraEntity updatedCompra) {
-        return compraRepository.findById(id).map(compra -> {
-            compra.setFecha(updatedCompra.getFecha());
-            compra.setTotal(updatedCompra.getTotal());
-            compra.setCliente(updatedCompra.getCliente());
-            compra.setProductosComprados(updatedCompra.getProductosComprados());
-            return compraRepository.save(compra);
-        });
-    }
+    @Transactional
+    public CompraEntity save(CompraEntity compra) {
+        // Ensure cliente exists
+        ClienteEntity cliente = clienteRepository.findById(compra.getCliente().getId_cliente())
+                .orElseThrow(() -> new EntityNotFoundException("Cliente not found"));
+        compra.setCliente(cliente);
 
-    public boolean deleteById(Long id) {
-        if (compraRepository.existsById(id)) {
-            compraRepository.deleteById(id);
-            return true;
+        // ✅ Step 1: Save each product first so it gets an ID
+        List<ProductoCompradoEntity> savedProductos = new ArrayList<>();
+        for (ProductoCompradoEntity productoComprado : compra.getProductosComprados()) {
+            productoComprado.setId_producto_comprado(null); // Ensure new purchase
+            ProductoCompradoEntity savedProducto = productoCompradoRepository.save(productoComprado);
+            savedProductos.add(savedProducto);
         }
-        return false;
+
+        // ✅ Step 2: Attach saved products to the purchase
+        compra.setProductosComprados(savedProductos);
+
+        // ✅ Step 3: Save the purchase with the now-persisted products
+        return compraRepository.save(compra);
     }
 
-    public List<CompraEntity> saveAll(List<CompraEntity> compras) {
+    @Transactional
+    public CompraEntity update(Long id_compra, CompraEntity updatedCompra) {
+        return compraRepository.findById(id_compra).map(compra -> {
+            compra.setCliente(updatedCompra.getCliente());
+            compra.setFecha(updatedCompra.getFecha());
+
+            // ✅ Handle purchased products update
+            compra.getProductosComprados().clear(); // Remove old products
+            for (ProductoCompradoEntity productoComprado : updatedCompra.getProductosComprados()) {
+                productoComprado.setId_producto_comprado(null); // Ensures new products get generated IDs
+                compra.getProductosComprados().add(productoComprado);
+            }
+
+            return compraRepository.save(compra);
+        }).orElseThrow(() -> new RuntimeException("Compra no encontrada con ID: " + id_compra));
+    }
+
+    @Transactional
+    public void deleteById(Long id_compra) {
+        if (!compraRepository.existsById(id_compra)) {
+            throw new RuntimeException("Compra no encontrada con ID: " + id_compra);
+        }
+        compraRepository.deleteById(id_compra);
+    }
+
+    public List<CompraEntity> importarCompras(List<CompraEntity> compras) {
         return compraRepository.saveAll(compras);
     }
 }

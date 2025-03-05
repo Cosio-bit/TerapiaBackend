@@ -15,52 +15,37 @@ public class ProductoCompradoController {
     @Autowired
     private ProductoCompradoService productoCompradoService;
 
-    // Obtener todos los productos comprados
     @GetMapping
-    public ResponseEntity<List<ProductoCompradoEntity>> obtenerTodos() {
+    public ResponseEntity<List<ProductoCompradoEntity>> obtenerTodosLosProductosComprados() {
         List<ProductoCompradoEntity> productosComprados = productoCompradoService.findAll();
         return productosComprados.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(productosComprados);
     }
 
-    // Obtener un producto comprado por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductoCompradoEntity> obtenerPorId(@PathVariable Long id) {
-        return productoCompradoService.findById(id)
+    @GetMapping("/{id_producto_comprado}")
+    public ResponseEntity<ProductoCompradoEntity> obtenerProductoCompradoPorId(@PathVariable Long id_producto_comprado) {
+        return productoCompradoService.findById(id_producto_comprado)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<ProductoCompradoEntity> crear(@RequestBody ProductoCompradoEntity productoComprado) {
-        if (productoComprado.getProducto() == null || productoComprado.getCantidad() <= 0 || productoComprado.getPrecio() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        ProductoCompradoEntity creado = productoCompradoService.save(productoComprado);
-        return ResponseEntity.ok(creado);
+    public ResponseEntity<ProductoCompradoEntity> crearProductoComprado(@RequestBody ProductoCompradoEntity productoComprado) {
+        return ResponseEntity.ok(productoCompradoService.save(productoComprado));
     }
 
-
-    // Actualizar un producto comprado
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductoCompradoEntity> actualizar(
-            @PathVariable Long id,
-            @RequestBody ProductoCompradoEntity productoComprado) {
-        return productoCompradoService.update(id, productoComprado)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @PutMapping("/{id_producto_comprado}")
+    public ResponseEntity<ProductoCompradoEntity> actualizarProductoComprado(@PathVariable Long id_producto_comprado, @RequestBody ProductoCompradoEntity productoComprado) {
+        return ResponseEntity.ok(productoCompradoService.update(id_producto_comprado, productoComprado));
     }
 
-    // Eliminar un producto comprado por ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (productoCompradoService.deleteById(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @DeleteMapping("/{id_producto_comprado}")
+    public ResponseEntity<Void> eliminarProductoComprado(@PathVariable Long id_producto_comprado) {
+        productoCompradoService.deleteById(id_producto_comprado);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/importar")
-    public ResponseEntity<List<ProductoCompradoEntity>> crearEnLote(@RequestBody List<ProductoCompradoEntity> productosComprados) {
-        return ResponseEntity.ok(productoCompradoService.saveAll(productosComprados));
+    public ResponseEntity<List<ProductoCompradoEntity>> importarProductosComprados(@RequestBody List<ProductoCompradoEntity> productosComprados) {
+        return ResponseEntity.ok(productoCompradoService.importarProductosComprados(productosComprados));
     }
 }

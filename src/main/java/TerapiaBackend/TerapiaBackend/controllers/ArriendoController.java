@@ -1,4 +1,3 @@
-
 package TerapiaBackend.TerapiaBackend.controllers;
 
 import TerapiaBackend.TerapiaBackend.entities.ArriendoEntity;
@@ -6,10 +5,10 @@ import TerapiaBackend.TerapiaBackend.services.ArriendoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/arriendos")
@@ -18,56 +17,58 @@ public class ArriendoController {
     @Autowired
     private ArriendoService arriendoService;
 
-    // Obtener todos los arriendos
+    /**
+     * Fetch all arriendos.
+     */
     @GetMapping
-    public List<ArriendoEntity> obtenerTodos() {
-        return arriendoService.findAll();
+    public ResponseEntity<List<ArriendoEntity>> obtenerTodosLosArriendos() {
+        List<ArriendoEntity> arriendos = arriendoService.findAll();
+        return arriendos.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(arriendos);
     }
 
-    // Obtener arriendo por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ArriendoEntity> obtenerPorId(@PathVariable Long id) {
-        return arriendoService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    /**
+     * Fetch a single arriendo by ID.
+     */
+    @GetMapping("/{id_arriendo}")
+    public ResponseEntity<ArriendoEntity> obtenerArriendoPorId(@PathVariable Long id_arriendo) {
+        Optional<ArriendoEntity> arriendo = arriendoService.findById(id_arriendo);
+        return arriendo.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    // Crear un nuevo arriendo
+    /**
+     * Create a new arriendo.
+     */
+    @Transactional
     @PostMapping
-    public ResponseEntity<ArriendoEntity> crear(@RequestBody ArriendoEntity arriendo) {
+    public ResponseEntity<?> crearArriendo(@RequestBody ArriendoEntity arriendo) {
+        if (arriendo.getSala() == null || arriendo.getCliente() == null) {
+            return ResponseEntity.badRequest().body("Faltan datos obligatorios: sala o cliente.");
+        }
         return ResponseEntity.ok(arriendoService.save(arriendo));
     }
 
-    // Actualizar un arriendo existente
-    @PutMapping("/{id}")
-    public ResponseEntity<ArriendoEntity> actualizar(@PathVariable Long id, @RequestBody ArriendoEntity arriendo) {
-        return arriendoService.update(id, arriendo)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // Eliminar un arriendo por ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (arriendoService.deleteById(id)) {
-            return ResponseEntity.noContent().build();
+    /**
+     * Update an existing arriendo.
+     */
+    @Transactional
+    @PutMapping("/{id_arriendo}")
+    public ResponseEntity<?> actualizarArriendo(@PathVariable Long id_arriendo, @RequestBody ArriendoEntity arriendo) {
+        if (arriendo.getSala() == null || arriendo.getCliente() == null) {
+            return ResponseEntity.badRequest().body("Faltan datos obligatorios: sala o cliente.");
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(arriendoService.update(id_arriendo, arriendo));
     }
 
-    // Obtener horarios disponibles para una sala en una fecha
-    @GetMapping("/disponibles/{idSala}/{fecha}")
-    public ResponseEntity<List<Map<String, String>>> obtenerHorariosDisponibles(
-            @PathVariable Long idSala,
-            @PathVariable String fecha) {
-        LocalDate localDate = LocalDate.parse(fecha);
-        return ResponseEntity.ok(arriendoService.getAvailableHours(idSala, localDate));
+    /**
+     * Delete an arriendo by ID.
+     */
+    @DeleteMapping("/{id_arriendo}")
+    public ResponseEntity<?> eliminarArriendo(@PathVariable Long id_arriendo) {
+        try {
+            arriendoService.deleteById(id_arriendo);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-
-    // Crear múltiples arriendos
-    @PostMapping("/importar")
-    public ResponseEntity<List<ArriendoEntity>> crearEnLote(@RequestBody List<ArriendoEntity> arriendos) {
-        return ResponseEntity.ok(arriendoService.saveAll(arriendos));
-    }
-
 }

@@ -1,18 +1,14 @@
-
 package TerapiaBackend.TerapiaBackend.services;
 
-import TerapiaBackend.TerapiaBackend.entities.ArriendoEntity;
-import TerapiaBackend.TerapiaBackend.repositories.ArriendoRepository;
+import TerapiaBackend.TerapiaBackend.entities.*;
+import TerapiaBackend.TerapiaBackend.repositories.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ArriendoService {
@@ -20,79 +16,76 @@ public class ArriendoService {
     @Autowired
     private ArriendoRepository arriendoRepository;
 
-    // Obtener todos los arriendos
+    @Autowired
+    private SalaRepository salaRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    /**
+     * Fetch all arriendos.
+     */
     public List<ArriendoEntity> findAll() {
         return arriendoRepository.findAll();
     }
 
-    // Obtener arriendo por ID
-    public Optional<ArriendoEntity> findById(Long id) {
-        return arriendoRepository.findById(id);
+    /**
+     * Fetch a single arriendo by ID.
+     */
+    public Optional<ArriendoEntity> findById(Long id_arriendo) {
+        return arriendoRepository.findById(id_arriendo);
     }
 
-    // Crear o actualizar un arriendo
+    /**
+     * Save a new arriendo, ensuring sala and cliente exist.
+     */
+    @Transactional
     public ArriendoEntity save(ArriendoEntity arriendo) {
+        // ✅ Ensure `sala` exists before saving the arriendo
+        SalaEntity sala = salaRepository.findById(arriendo.getSala().getId_sala())
+                .orElseThrow(() -> new EntityNotFoundException("Sala not found"));
+
+        // ✅ Ensure `cliente` exists before saving the arriendo
+        ClienteEntity cliente = clienteRepository.findById(arriendo.getCliente().getId_cliente())
+                .orElseThrow(() -> new EntityNotFoundException("Cliente not found"));
+
+        arriendo.setSala(sala);
+        arriendo.setCliente(cliente);
         return arriendoRepository.save(arriendo);
     }
 
-    // Actualizar arriendo existente
-    public Optional<ArriendoEntity> update(Long id, ArriendoEntity arriendo) {
-        return arriendoRepository.findById(id).map(existingArriendo -> {
-            existingArriendo.setSala(arriendo.getSala());
-            existingArriendo.setCliente(arriendo.getCliente());
-            existingArriendo.setFecha(arriendo.getFecha());
-            existingArriendo.setHora_inicio(arriendo.getHora_inicio());
-            existingArriendo.setHora_fin(arriendo.getHora_fin());
-            existingArriendo.setEstado(arriendo.getEstado());
-            existingArriendo.setMonto_pagado(arriendo.getMonto_pagado());
-            return arriendoRepository.save(existingArriendo);
-        });
+    /**
+     * Update an existing arriendo.
+     */
+    @Transactional
+    public ArriendoEntity update(Long id_arriendo, ArriendoEntity updatedArriendo) {
+        return arriendoRepository.findById(id_arriendo).map(arriendo -> {
+            SalaEntity sala = salaRepository.findById(updatedArriendo.getSala().getId_sala())
+                    .orElseThrow(() -> new EntityNotFoundException("Sala not found"));
+
+            ClienteEntity cliente = clienteRepository.findById(updatedArriendo.getCliente().getId_cliente())
+                    .orElseThrow(() -> new EntityNotFoundException("Cliente not found"));
+
+            arriendo.setSala(sala);
+            arriendo.setCliente(cliente);
+            arriendo.setFecha(updatedArriendo.getFecha());
+            arriendo.setHora_inicio(updatedArriendo.getHora_inicio());
+            arriendo.setHora_fin(updatedArriendo.getHora_fin());
+            arriendo.setEstado(updatedArriendo.getEstado());
+            arriendo.setMonto_pagado(updatedArriendo.getMonto_pagado());
+
+            return arriendoRepository.save(arriendo);
+        }).orElseThrow(() -> new RuntimeException("Arriendo no encontrado con ID: " + id_arriendo));
     }
 
-    // Eliminar un arriendo por ID
-    public boolean deleteById(Long id) {
-        if (arriendoRepository.existsById(id)) {
-            arriendoRepository.deleteById(id);
-            return true;
+    /**
+     * Delete an arriendo by ID.
+     */
+    @Transactional
+    public void deleteById(Long id_arriendo) {
+        if (!arriendoRepository.existsById(id_arriendo)) {
+            throw new RuntimeException("Arriendo no encontrado con ID: " + id_arriendo);
         }
-        return false;
+        arriendoRepository.deleteById(id_arriendo);
     }
-
-    // Obtener horarios disponibles para una sala en una fecha
-    public List<Map<String, String>> getAvailableHours(Long idSala, LocalDate fecha) {
-        LocalTime inicioDia = LocalTime.of(8, 0);  // Horario de inicio del día
-        LocalTime finDia = LocalTime.of(20, 0);    // Horario de fin del día
-
-        List<Object[]> horariosOcupados = arriendoRepository.findOccupiedHoursByDate(idSala, fecha);
-
-        List<Map<String, String>> horariosDisponibles = new ArrayList<>();
-        LocalTime inicioDisponible = inicioDia;
-
-        for (Object[] horario : horariosOcupados) {
-            LocalTime inicioOcupado = LocalTime.parse(horario[0].toString());
-            LocalTime finOcupado = LocalTime.parse(horario[1].toString());
-
-            if (inicioDisponible.isBefore(inicioOcupado)) {
-                horariosDisponibles.add(Map.of(
-                        "hora_inicio", inicioDisponible.toString(),
-                        "hora_fin", inicioOcupado.toString()
-                ));
-            }
-            inicioDisponible = finOcupado.isAfter(inicioDisponible) ? finOcupado : inicioDisponible;
-        }
-
-        if (inicioDisponible.isBefore(finDia)) {
-            horariosDisponibles.add(Map.of(
-                    "hora_inicio", inicioDisponible.toString(),
-                    "hora_fin", finDia.toString()
-            ));
-        }
-
-        return horariosDisponibles;
-    }
-
-    public List<ArriendoEntity> saveAll(List<ArriendoEntity> arriendos) {
-        return arriendoRepository.saveAll(arriendos);
-    }
-
 }

@@ -25,7 +25,7 @@ public class SalaEntity {
     private String ubicacion;
     private String estado;  // Example: "available", "maintenance", etc.
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)  // 👈 Same as `cliente` in SesionGroupEntity
     @JoinColumn(name = "id_proveedor", nullable = false)
     private ProveedorEntity proveedor;
 }

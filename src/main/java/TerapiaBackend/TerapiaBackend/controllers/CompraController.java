@@ -5,10 +5,9 @@ import TerapiaBackend.TerapiaBackend.services.CompraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/compras")
@@ -18,53 +17,48 @@ public class CompraController {
     private CompraService compraService;
 
     @GetMapping
-    public ResponseEntity<List<CompraEntity>> obtenerTodas() {
+    public ResponseEntity<List<CompraEntity>> obtenerTodasLasCompras() {
         List<CompraEntity> compras = compraService.findAll();
         return compras.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(compras);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CompraEntity> obtenerPorId(@PathVariable Long id) {
-        return compraService.findById(id)
+    @GetMapping("/{id_compra}")
+    public ResponseEntity<CompraEntity> obtenerCompraPorId(@PathVariable Long id_compra) {
+        return compraService.findById(id_compra)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Transactional
     @PostMapping
-    public ResponseEntity<CompraEntity> crear(@RequestBody Map<String, Object> requestBody) {
-        CompraEntity compra = new CompraEntity();
-        boolean usarSaldo = (boolean) requestBody.getOrDefault("usarSaldo", false);
-
-        // Extract CompraEntity from request body
-        if (requestBody.containsKey("compra")) {
-            compra = (CompraEntity) requestBody.get("compra");
+    public ResponseEntity<?> crearCompra(@RequestBody CompraEntity compra) {
+        if (compra.getCliente() == null || compra.getProductosComprados() == null || compra.getProductosComprados().isEmpty()) {
+            return ResponseEntity.badRequest().body("Faltan datos obligatorios: cliente o productos comprados.");
         }
-
-        CompraEntity savedCompra = compraService.confirmarCompra(compra, usarSaldo);
-        return ResponseEntity.ok(savedCompra);
+        return ResponseEntity.ok(compraService.save(compra));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CompraEntity> actualizar(@PathVariable Long id, @RequestBody CompraEntity compra) {
-        return compraService.update(id, compra)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @Transactional
+    @PutMapping("/{id_compra}")
+    public ResponseEntity<?> actualizarCompra(@PathVariable Long id_compra, @RequestBody CompraEntity compra) {
+        if (compra.getCliente() == null || compra.getProductosComprados() == null || compra.getProductosComprados().isEmpty()) {
+            return ResponseEntity.badRequest().body("Faltan datos obligatorios: cliente o productos comprados.");
+        }
+        return ResponseEntity.ok(compraService.update(id_compra, compra));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (compraService.deleteById(id)) {
+    @DeleteMapping("/{id_compra}")
+    public ResponseEntity<?> eliminarCompra(@PathVariable Long id_compra) {
+        try {
+            compraService.deleteById(id_compra);
             return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/importar")
-    public ResponseEntity<List<CompraEntity>> crearEnLote(@RequestBody List<CompraEntity> compras) {
-        if (compras.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        List<CompraEntity> savedCompras = compraService.saveAll(compras);
-        return ResponseEntity.ok(savedCompras);
+    public ResponseEntity<List<CompraEntity>> importarCompras(@RequestBody List<CompraEntity> compras) {
+        return ResponseEntity.ok(compraService.importarCompras(compras));
     }
 }

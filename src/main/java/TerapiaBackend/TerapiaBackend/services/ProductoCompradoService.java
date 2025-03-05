@@ -14,46 +14,34 @@ public class ProductoCompradoService {
     @Autowired
     private ProductoCompradoRepository productoCompradoRepository;
 
-    // Obtener todos los productos comprados
     public List<ProductoCompradoEntity> findAll() {
         return productoCompradoRepository.findAll();
     }
 
-    // Obtener un producto comprado por ID
-    public Optional<ProductoCompradoEntity> findById(Long id) {
-        return productoCompradoRepository.findById(id);
+    public Optional<ProductoCompradoEntity> findById(Long id_producto_comprado) {
+        return productoCompradoRepository.findById(id_producto_comprado);
     }
 
-    // Crear o actualizar un producto comprado
     public ProductoCompradoEntity save(ProductoCompradoEntity productoComprado) {
         return productoCompradoRepository.save(productoComprado);
     }
 
-    // Eliminar un producto comprado por ID
-    public boolean deleteById(Long id) {
-        if (productoCompradoRepository.existsById(id)) {
-            productoCompradoRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
-    // Actualizar un producto comprado
-    public Optional<ProductoCompradoEntity> update(Long id, ProductoCompradoEntity updatedProductoComprado) {
-        return productoCompradoRepository.findById(id).map(productoComprado -> {
-            actualizarProductoComprado(productoComprado, updatedProductoComprado);
+    public ProductoCompradoEntity update(Long id_producto_comprado, ProductoCompradoEntity updatedProductoComprado) {
+        return productoCompradoRepository.findById(id_producto_comprado).map(productoComprado -> {
+            productoComprado.setProducto(updatedProductoComprado.getProducto());
+            productoComprado.setCantidad(updatedProductoComprado.getCantidad());
             return productoCompradoRepository.save(productoComprado);
-        });
+        }).orElseThrow(() -> new RuntimeException("Producto comprado no encontrado con ID: " + id_producto_comprado));
     }
 
-    private void actualizarProductoComprado(ProductoCompradoEntity existente, ProductoCompradoEntity actualizado) {
-        existente.setNombre(actualizado.getNombre());
-        existente.setPrecio(actualizado.getPrecio());
-        existente.setCantidad(actualizado.getCantidad());
-        existente.setProducto(actualizado.getProducto());
+    public void deleteById(Long id_producto_comprado) {
+        if (!productoCompradoRepository.existsById(id_producto_comprado)) {
+            throw new RuntimeException("Producto comprado no encontrado con ID: " + id_producto_comprado);
+        }
+        productoCompradoRepository.deleteById(id_producto_comprado);
     }
 
-    public List<ProductoCompradoEntity> saveAll(List<ProductoCompradoEntity> productosComprados) {
+    public List<ProductoCompradoEntity> importarProductosComprados(List<ProductoCompradoEntity> productosComprados) {
         return productoCompradoRepository.saveAll(productosComprados);
     }
 }

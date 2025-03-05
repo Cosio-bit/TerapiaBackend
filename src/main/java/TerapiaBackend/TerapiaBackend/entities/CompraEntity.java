@@ -1,15 +1,12 @@
 package TerapiaBackend.TerapiaBackend.entities;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "compra")
@@ -24,13 +21,12 @@ public class CompraEntity {
     private Long id_compra;
 
     private LocalDateTime fecha;
-    private BigDecimal total;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private ClienteEntity cliente;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "id_compra")  // Ensures the relationship is owned by CompraEntity
+    @JoinColumn(name = "id_compra") // Productos comprados están en la compra
     private List<ProductoCompradoEntity> productosComprados;
 }
