@@ -20,7 +20,9 @@ public class GastoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_gasto;
 
+    @Column(name = "nombre", columnDefinition = "TEXT")
     private String nombre;
+
     private String descripcion;  // Detalle del gasto (opcional)
     private Double monto;  // Monto del gasto
     private LocalDate fecha;  // Fecha en que se realizó el gasto

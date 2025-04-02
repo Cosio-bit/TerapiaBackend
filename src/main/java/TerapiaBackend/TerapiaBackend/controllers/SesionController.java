@@ -48,4 +48,7 @@ public class SesionController {
     public ResponseEntity<List<SesionEntity>> crearEnLote(@RequestBody List<SesionEntity> sesiones) {
         return ResponseEntity.ok(sesionService.importarSesiones(sesiones));
     }
+
+
+
 }

@@ -88,4 +88,12 @@ public class ArriendoService {
         }
         arriendoRepository.deleteById(id_arriendo);
     }
+
+
+    public List<ArriendoEntity> findByClienteId(Long idCliente) {
+        return arriendoRepository.findByClienteId(idCliente);
+    }
+
+
+
 }

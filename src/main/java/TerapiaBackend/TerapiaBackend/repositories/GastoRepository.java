@@ -34,4 +34,27 @@ public interface GastoRepository extends JpaRepository<GastoEntity, Long> {
             @Param("fechaInicio") LocalDate fechaInicio,
             @Param("fechaFin") LocalDate fechaFin
     );
+
+
+    // Usamos SQL nativo porque Hibernate interpreta incorrectamente el tipo de columna "nombre"
+    @Query(value = "SELECT SUM(g.monto) FROM gasto g " +
+            "WHERE g.fecha BETWEEN :startDate AND :endDate " +
+            "AND (:nombre IS NULL OR LOWER(g.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+            "AND (:idProveedor IS NULL OR g.id_proveedor = :idProveedor)",
+            nativeQuery = true)
+    Double getTotalGastosFiltrado(@Param("startDate") LocalDate startDate,
+                                  @Param("endDate") LocalDate endDate,
+                                  @Param("nombre") String nombre,
+                                  @Param("idProveedor") Long idProveedor);
+
+
+    @Query("SELECT g FROM GastoEntity g " +
+            "WHERE g.fecha BETWEEN :startDate AND :endDate " +
+            "AND (:nombre IS NULL OR LOWER(CAST(g.nombre AS string)) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+            "AND (:idProveedor IS NULL OR g.proveedor.id_proveedor = :idProveedor)")
+    List<GastoEntity> findGastosFiltrado(@Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate,
+                                         @Param("nombre") String nombre,
+                                         @Param("idProveedor") Long idProveedor);
+
 }

@@ -71,4 +71,11 @@ public class ArriendoController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/cliente/{id_cliente}")
+    public ResponseEntity<List<ArriendoEntity>> obtenerArriendosPorCliente(@PathVariable Long id_cliente) {
+        List<ArriendoEntity> arriendos = arriendoService.findByClienteId(id_cliente);
+        return arriendos.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(arriendos);
+    }
+
 }

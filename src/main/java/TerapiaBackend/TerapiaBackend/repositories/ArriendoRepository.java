@@ -1,4 +1,3 @@
-
 package TerapiaBackend.TerapiaBackend.repositories;
 
 import TerapiaBackend.TerapiaBackend.entities.ArriendoEntity;
@@ -13,15 +12,31 @@ import java.util.List;
 @Repository
 public interface ArriendoRepository extends JpaRepository<ArriendoEntity, Long> {
 
-    @Query("SELECT a.hora_inicio, a.hora_fin FROM ArriendoEntity a WHERE a.sala.id_sala = :idSala AND a.fecha = :fecha ORDER BY a.hora_inicio ASC")
-    List<Object[]> findOccupiedHoursByDate(@Param("idSala") Long idSala, @Param("fecha") LocalDate fecha);
+    @Query("SELECT a FROM ArriendoEntity a WHERE a.cliente.id_cliente = :idCliente")
+    List<ArriendoEntity> findByClienteId(@Param("idCliente") Long idCliente);
 
-    @Query("SELECT COUNT(a.id_arriendo), SUM(a.monto_pagado) FROM ArriendoEntity a WHERE a.sala.id_sala = :idSala AND a.fecha BETWEEN :fechaInicio AND :fechaFin")
-    Object[] findArriendosAndGananciasBySala(@Param("idSala") Long idSala, @Param("fechaInicio") LocalDate fechaInicio, @Param("fechaFin") LocalDate fechaFin);
 
-    @Query("SELECT a.fecha, a.hora_inicio, a.hora_fin, s.nombre, s.ubicacion FROM ArriendoEntity a JOIN a.sala s WHERE a.cliente.id_cliente = :idCliente AND a.fecha BETWEEN :fechaInicio AND :fechaFin")
-    List<Object[]> findSalasArrendadasByCliente(@Param("idCliente") Long idCliente, @Param("fechaInicio") LocalDate fechaInicio, @Param("fechaFin") LocalDate fechaFin);
+    // Monto total filtrando por fechas, estado, cliente y proveedor
+    @Query("SELECT SUM(a.monto_pagado) FROM ArriendoEntity a " +
+            "WHERE a.fecha BETWEEN :startDate AND :endDate " +
+            "AND (:estado IS NULL OR a.estado = :estado) " +
+            "AND (:idCliente IS NULL OR a.cliente.id_cliente = :idCliente) " +
+            "AND (:idProveedor IS NULL OR a.sala.proveedor.id_proveedor = :idProveedor)")
+    Double getTotalMontoPagadoFiltrado(@Param("startDate") LocalDate startDate,
+                                       @Param("endDate") LocalDate endDate,
+                                       @Param("estado") String estado,
+                                       @Param("idCliente") Long idCliente,
+                                       @Param("idProveedor") Long idProveedor);
 
-    @Query("SELECT SUM(a.monto_pagado) FROM ArriendoEntity a WHERE a.cliente.id_cliente = :idCliente AND a.fecha BETWEEN :fechaInicio AND :fechaFin")
-    Double findGastoTotalByCliente(@Param("idCliente") Long idCliente, @Param("fechaInicio") LocalDate fechaInicio, @Param("fechaFin") LocalDate fechaFin);
+    // Obtener arriendos filtrando por fechas, estado, cliente y proveedor
+    @Query("SELECT a FROM ArriendoEntity a " +
+            "WHERE a.fecha BETWEEN :startDate AND :endDate " +
+            "AND (:estado IS NULL OR a.estado = :estado) " +
+            "AND (:idCliente IS NULL OR a.cliente.id_cliente = :idCliente) " +
+            "AND (:idProveedor IS NULL OR a.sala.proveedor.id_proveedor = :idProveedor)")
+    List<ArriendoEntity> findAllFiltrado(@Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate,
+                                         @Param("estado") String estado,
+                                         @Param("idCliente") Long idCliente,
+                                         @Param("idProveedor") Long idProveedor);
 }

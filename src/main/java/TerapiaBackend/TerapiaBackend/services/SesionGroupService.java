@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -98,4 +99,15 @@ public class SesionGroupService {
     public List<SesionGroupEntity> importarSesionGroups(List<SesionGroupEntity> sesionGroups) {
         return sesionGroupRepository.saveAll(sesionGroups);
     }
+
+
+    public Double getTotalByFechaAndEstado(LocalDateTime startDate, LocalDateTime endDate, String estado) {
+        Double total = sesionGroupRepository.getTotalByFechaAndEstado(startDate, endDate, estado);
+        return total != null ? total : 0.0;
+    }
+
+    public List<SesionGroupEntity> getSesionesByFechaAndEstado(LocalDateTime startDate, LocalDateTime endDate, String estado) {
+        return sesionGroupRepository.findAllByFechaAndEstado(startDate, endDate, estado);
+    }
+
 }

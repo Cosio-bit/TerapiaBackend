@@ -8,6 +8,4 @@ import org.springframework.stereotype.Repository;
 public interface SalaRepository extends JpaRepository<SalaEntity, Long> {
 
 
-
-    // Métodos personalizados si son necesarios
 }

@@ -12,4 +12,17 @@ import java.util.Map;
 @Service
 public class GastoEstadisticasService {
 
+    @Autowired
+    private GastoRepository gastoRepository;
+
+
+    public Double getTotalGastosFiltrado(LocalDate startDate, LocalDate endDate, String nombre, Long idProveedor) {
+        Double total = gastoRepository.getTotalGastosFiltrado(startDate, endDate, nombre, idProveedor);
+        return total != null ? total : 0.0;
+    }
+
+    public List<GastoEntity> getGastosFiltrado(LocalDate startDate, LocalDate endDate, String nombre, Long idProveedor) {
+        return gastoRepository.findGastosFiltrado(startDate, endDate, nombre, idProveedor);
+    }
+
 }

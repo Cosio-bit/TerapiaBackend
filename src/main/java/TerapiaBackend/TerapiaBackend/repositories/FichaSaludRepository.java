@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface FichaSaludRepository extends JpaRepository<FichaSaludEntity, Long> {
 
-    // Contar fichas de salud en un rango de fechas
-    long countByFechaBetween(Date fechaInicio, Date fechaFin);
 }
