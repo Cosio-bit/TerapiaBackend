@@ -20,4 +20,7 @@ public interface CompraRepository extends JpaRepository<CompraEntity, Long> {
     List<CompraEntity> findAllByFechaBetween(LocalDateTime startDate, LocalDateTime endDate);
 
 
+    // Obtiene todas las compras de un cliente específico
+    @Query("SELECT c FROM CompraEntity c WHERE c.cliente.id_cliente = :id_cliente")
+    List<CompraEntity> findByClienteId(@Param("id_cliente") Long id_cliente);
 }

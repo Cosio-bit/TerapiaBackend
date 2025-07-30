@@ -86,6 +86,7 @@ public class CompraService {
         return compraRepository.saveAll(compras);
     }
 
-
-
+    public List<CompraEntity> findByClienteId(Long id_cliente) {
+        return compraRepository.findByClienteId(id_cliente);
+    }
 }

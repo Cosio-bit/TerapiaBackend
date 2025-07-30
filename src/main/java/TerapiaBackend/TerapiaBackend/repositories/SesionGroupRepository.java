@@ -26,4 +26,9 @@ public interface SesionGroupRepository extends JpaRepository<SesionGroupEntity, 
                                                     @Param("endDate") LocalDateTime endDate,
                                                     @Param("estado") String estado);
 
+
+    // Obtener todas las SesionGroupEntity por cliente
+    @Query("SELECT sg FROM SesionGroupEntity sg WHERE sg.cliente.id_cliente = :id_cliente")
+    List<SesionGroupEntity> findByClienteId(@Param("id_cliente") Long id_cliente);
+
 }

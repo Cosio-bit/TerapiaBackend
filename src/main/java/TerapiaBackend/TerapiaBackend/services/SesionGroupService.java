@@ -110,4 +110,8 @@ public class SesionGroupService {
         return sesionGroupRepository.findAllByFechaAndEstado(startDate, endDate, estado);
     }
 
+    public List<SesionGroupEntity> findByClienteId(Long id_cliente) {
+        return sesionGroupRepository.findByClienteId(id_cliente);
+    }
+
 }

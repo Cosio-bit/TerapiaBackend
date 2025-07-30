@@ -61,4 +61,11 @@ public class CompraController {
     public ResponseEntity<List<CompraEntity>> importarCompras(@RequestBody List<CompraEntity> compras) {
         return ResponseEntity.ok(compraService.importarCompras(compras));
     }
+
+    //obtener todas las compras de un cliente
+    @GetMapping("/cliente/{id_cliente}")
+    public ResponseEntity<List<CompraEntity>> obtenerComprasPorCliente(@PathVariable Long id_cliente) {
+        List<CompraEntity> compras = compraService.findByClienteId(id_cliente);
+        return compras.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(compras);
+}
 }

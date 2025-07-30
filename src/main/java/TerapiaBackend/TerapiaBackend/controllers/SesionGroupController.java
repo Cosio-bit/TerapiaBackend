@@ -61,4 +61,11 @@ public class SesionGroupController {
     public ResponseEntity<List<SesionGroupEntity>> crearEnLote(@RequestBody List<SesionGroupEntity> sesionGroups) {
         return ResponseEntity.ok(sesionGroupService.importarSesionGroups(sesionGroups));
     }
+
+    @GetMapping("/cliente/{id_cliente}")
+    public ResponseEntity<List<SesionGroupEntity>> obtenerSesionGroupsPorCliente(@PathVariable Long id_cliente) {
+        List<SesionGroupEntity> sesionGroups = sesionGroupService.findByClienteId(id_cliente);
+        return sesionGroups.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(sesionGroups);
+
+}
 }
